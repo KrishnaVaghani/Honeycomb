@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Honeycomb Secure Storage System</title>
+<style>
+:root{--bg:#070b16;--panel:#0e1526;--panel2:#141d33;--line:#243152;--gold:#ffb703;--gold2:#ffd34d;--text:#e8ecf5;--mute:#8a96b5;--ok:#2ee59d;--bad:#ff4d5e}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:radial-gradient(1200px 600px at 80% -10%,#1a2447 0,transparent 60%),var(--bg);color:var(--text);font-family:Inter,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;line-height:1.6}
+code,.mono{font-family:ui-monospace,SFMono-Regular,Consolas,monospace}
+a{color:var(--gold)}
+.wrap{max-width:1180px;margin:0 auto;padding:0 20px}
+nav{position:sticky;top:0;z-index:20;background:#070b16cc;backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
+nav .wrap{display:flex;justify-content:space-between;align-items:center;height:58px}
+nav b{color:var(--gold);letter-spacing:.5px}
+nav a{color:var(--mute);text-decoration:none;margin-left:18px;font-size:.92rem}
+nav a:hover{color:var(--gold2)}
+.hero{display:grid;grid-template-columns:1.1fr .9fr;gap:30px;align-items:center;padding:60px 0 40px}
+.tag{display:inline-block;border:1px solid var(--gold);color:var(--gold);border-radius:99px;padding:3px 12px;font-size:.78rem;letter-spacing:1px;text-transform:uppercase}
+h1{font-size:clamp(2rem,5vw,3.4rem);line-height:1.1;margin:14px 0}
+h1 span{background:linear-gradient(90deg,var(--gold),var(--gold2));-webkit-background-clip:text;background-clip:text;color:transparent}
+.hero p{color:var(--mute);max-width:560px;font-size:1.05rem}
+#heroSvg{width:100%;max-width:440px;margin:auto;display:block;filter:drop-shadow(0 0 30px #ffb70333)}
+#heroSvg polygon{fill:#ffb70314;stroke:var(--gold);stroke-width:2;animation:glow 4s ease-in-out infinite}
+@keyframes glow{50%{fill:#ffb70344;stroke:var(--gold2)}}
+button{font:inherit;cursor:pointer;border:0;border-radius:10px;padding:10px 16px;font-weight:600;transition:.2s}
+button:focus-visible,textarea:focus-visible,input:focus-visible{outline:3px solid var(--gold2);outline-offset:2px}
+.btn-gold{background:linear-gradient(135deg,var(--gold),#ff8c00);color:#1a1200}
+.btn-gold:hover{transform:translateY(-2px);box-shadow:0 8px 22px #ffb70344}
+.btn-line{background:transparent;color:var(--text);border:1px solid var(--line)}
+.btn-line:hover{border-color:var(--gold);color:var(--gold2)}
+.btn-red{background:#ff4d5e22;color:#ff8b96;border:1px solid #ff4d5e66}
+.btn-red:hover{background:#ff4d5e44}
+button:disabled{opacity:.45;cursor:not-allowed;transform:none;box-shadow:none}
+h2{font-size:1.7rem;margin:0 0 6px}
+.sub{color:var(--mute);margin:0 0 22px}
+section{padding:36px 0}
+.card{background:linear-gradient(180deg,var(--panel2),var(--panel));border:1px solid var(--line);border-radius:16px;padding:20px}
+.dash{display:grid;grid-template-columns:330px 1fr;gap:20px;align-items:start}
+label{display:block;font-weight:600;margin-bottom:6px}
+textarea,input{width:100%;background:#080d1b;color:var(--text);border:1px solid var(--line);border-radius:10px;padding:10px;font:inherit;resize:vertical}
+.row{display:flex;flex-wrap:wrap;gap:10px;margin-top:12px}
+.stats{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:16px}
+.stat{background:#080d1b;border:1px solid var(--line);border-radius:10px;padding:10px}
+.stat small{color:var(--mute);display:block}
+.stat b{font-size:1.15rem}
+#alert{margin-bottom:16px;border-radius:14px;padding:14px 18px;font-weight:600;display:none;animation:pop .35s}
+#alert.ok{display:block;background:#2ee59d1f;border:1px solid var(--ok);color:var(--ok)}
+#alert.bad{display:block;background:#ff4d5e26;border:2px solid var(--bad);color:#ff9aa4;box-shadow:0 0 30px #ff4d5e44;font-size:1.05rem}
+#alert.info{display:block;background:#ffb7031a;border:1px solid var(--gold);color:var(--gold2)}
+.main{display:grid;grid-template-columns:1fr 300px;gap:16px}
+#hive{min-height:300px;overflow:hidden;padding:26px 0 12px}
+.hrow{display:flex;justify-content:center}
+.empty{text-align:center;color:var(--mute);padding:60px 20px}
+.empty svg{width:90px;opacity:.8}
+.hex{position:relative;width:176px;height:200px;margin:0 3px;border:0;padding:0;background:var(--gold);clip-path:polygon(50% 0,100% 25%,100% 75%,50% 100%,0 75%,0 25%);transition:.25s;color:var(--text);text-align:center}
+.hex .in{position:absolute;inset:4px;background:linear-gradient(160deg,#18233f,#0b1224);clip-path:inherit;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;padding:34px 22px;overflow:hidden}
+.hex:hover{transform:translateY(-5px) scale(1.05);z-index:3;filter:drop-shadow(0 0 14px var(--gold))}
+.hex.sel{background:#fff}
+.hex.bad{background:var(--bad);animation:shake .5s}
+.hex.bad .in{background:linear-gradient(160deg,#3a0f18,#1c070c)}
+.hex.ok{background:var(--ok)}
+.hex.new{animation:pop .5s}
+@keyframes pop{from{opacity:0;transform:scale(.4)}to{opacity:1;transform:scale(1)}}
+@keyframes shake{25%{transform:translateX(-5px)}75%{transform:translateX(5px)}}
+.hex .n{color:var(--gold);font-weight:800;font-size:.85rem}
+.hex .d{font-size:.78rem;font-weight:600;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;word-break:break-word;line-height:1.25}
+.hex small{font-size:.58rem;color:var(--mute);display:block;line-height:1.3}
+.hex .h{font-family:ui-monospace,Consolas,monospace;font-size:.58rem;color:#b9c4e4}
+.badge{font-size:.62rem;font-weight:800;border-radius:99px;padding:1px 9px;margin-top:2px;background:#2ee59d26;color:var(--ok)}
+.hex.bad .badge{background:#ff4d5e33;color:#ff8b96}
+#inspect h3{margin:0 0 10px;color:var(--gold)}
+.f{margin-bottom:10px}
+.f small{color:var(--mute);display:block}
+.f code{word-break:break-all;font-size:.75rem;background:#080d1b;border:1px solid var(--line);border-radius:8px;padding:6px;display:block}
+.f code.bad{border-color:var(--bad);color:#ff9aa4}
+.f code.good{border-color:#2ee59d66}
+.steps{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:16px}
+.steps .card h3{color:var(--gold);margin:6px 0}
+.steps .card p{color:var(--mute);margin:0}
+.ico{font-size:1.6rem}
+.note{border-left:4px solid var(--gold);background:#ffb7030f;padding:14px 18px;border-radius:0 12px 12px 0;color:#d8deee;font-size:.92rem}
+footer{text-align:center;color:var(--mute);padding:30px 0 50px;font-size:.85rem}
+@media(max-width:940px){.hero,.dash,.main{grid-template-columns:1fr}.hero{padding-top:36px}nav a{display:none}}
+@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<nav><div class="wrap"><b>⬢ HONEYCOMB SECURE</b><div><a href="#lab">Live Lab</a><a href="#how">How It Works</a></div></div></nav>
+
+<header class="wrap hero">
+  <div>
+    <span class="tag">College Project · Data Integrity</span>
+    <h1>Honeycomb <span>Secure Storage</span> System</h1>
+    <p>Every record lives in its own hexagonal cell that is sealed with a SHA-256 fingerprint and chained to the cell before it. Change a single character in any cell and the whole honeycomb knows.</p>
+    <div class="row"><a href="#lab"><button class="btn-gold">Try the Live Lab</button></a><a href="#how"><button class="btn-line">How It Works</button></a></div>
+  </div>
+  <svg id="heroSvg" viewBox="0 0 400 380" role="img" aria-label="Animated honeycomb of connected hexagons"></svg>
+</header>
+
+<section id="lab" class="wrap">
+  <h2>Live Storage Lab</h2>
+  <p class="sub">Store data, inspect cells, tamper with one, then verify the honeycomb.</p>
+  <div id="alert" role="alert" aria-live="assertive"></div>
+  <div class="dash">
+    <aside class="card">
+      <label for="msg">Data to store</label>
+      <textarea id="msg" rows="4" maxlength="300" placeholder="e.g. Student record: Alice, Grade A"></textarea>
+      <div class="row"><button id="storeBtn" class="btn-gold">🔒 Securely Store Data</button></div>
+      <div class="row">
+        <button id="tamperBtn" class="btn-red">⚠ Demo Tamper</button>
+        <button id="verifyBtn" class="btn-line">✔ Verify Honeycomb Integrity</button>
+        <button id="resetBtn" class="btn-line">↺ Reset System</button>
+      </div>
+      <div class="stats">
+        <div class="stat"><small>Cells stored</small><b id="sCount">0</b></div>
+        <div class="stat"><small>Last verification</small><b id="sState">Not run</b></div>
+      </div>
+    </aside>
+    <div class="main">
+      <div id="hive" class="card" aria-label="Honeycomb of stored cells"></div>
+      <aside id="inspect" class="card" aria-live="polite"></aside>
+    </div>
+  </div>
+</section>
+
+<section id="how" class="wrap">
+  <h2>How It Works</h2>
+  <p class="sub">Four ideas that make the honeycomb tamper-evident.</p>
+  <div class="steps">
+    <div class="card"><div class="ico">🧬</div><h3>1. Hashing</h3><p>A hash function (SHA-256) turns any data into a fixed 64-character fingerprint. The same input always gives the same fingerprint, but even a one-letter change produces a completely different one.</p></div>
+    <div class="card"><div class="ico">🔗</div><h3>2. Linked Cells</h3><p>Each cell stores the hash of the previous cell, then hashes its own index, timestamp, data and that previous hash. Cells are chained together, so each one vouches for the one before it.</p></div>
+    <div class="card"><div class="ico">🚨</div><h3>3. Tamper Detection</h3><p>Verification recomputes every hash. If edited data no longer matches its stored hash, or a cell's previous-hash no longer matches its neighbour, that cell is flagged as tampered.</p></div>
+    <div class="card"><div class="ico">⬢</div><h3>4. Why a Honeycomb?</h3><p>In a honeycomb every cell shares walls with its neighbours, so the structure is strong because it is connected. Likewise, each data cell is bound to its neighbours by hashes; breaking one wall is visible to the whole structure.</p></div>
+  </div>
+  <p class="note" style="margin-top:22px"><b>Educational note:</b> this is a learning visualization. Real secure systems also need encryption, authentication, access control, backups, and hardened secure servers.</p>
+</section>
+<footer>Honeycomb Secure Storage System · College Project · Built with HTML, CSS &amp; vanilla JavaScript</footer>
+
+<script>
+const $ = s => document.querySelector(s);
+const ZERO = '0'.repeat(64), KEY = 'honeycomb-chain-v1';
+let chain = [], selected = null, lastState = 'Not run', newIdx = null;
+
+async function sha256(str){
+  const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(str));
+  return [...new Uint8Array(buf)].map(b => b.toString(16).padStart(2,'0')).join('');
+}
+const calcHash = c => sha256(JSON.stringify([c.index, c.timestamp, c.data, c.previousHash]));
+const short = h => h.slice(0,6) + '…' + h.slice(-4);
+const fmt = t => new Date(t).toLocaleString([], {dateStyle:'short', timeStyle:'medium'});
+
+function save(){ try{ localStorage.setItem(KEY, JSON.stringify(chain)); }catch(e){} }
+function load(){ try{ chain = JSON.parse(localStorage.getItem(KEY)) || []; }catch(e){ chain = []; } }
+
+function banner(type, html){
+  const a = $('#alert'); a.className = type; a.innerHTML = html;
+  if(!html) a.style.display = 'none'; else a.style.display = '';
+}
+
+/* ---------- hero honeycomb ---------- */
+(function hero(){
+  const svg = $('#heroSvg'), r = 40, w = Math.sqrt(3)*r;
+  const pts = (cx,cy) => [0,1,2,3,4,5].map(i => { const a = Math.PI/180*(60*i-30); return (cx+r*Math.cos(a)).toFixed(1)+','+(cy+r*Math.sin(a)).toFixed(1); }).join(' ');
+  let out = '', k = 0;
+  [[3,0],[4,1],[5,2],[4,3],[3,4]].forEach(([n,row]) => {
+    for(let i=0;i<n;i++){
+      const cx = 200 + (i-(n-1)/2)*w, cy = 60 + row*r*1.5;
+      out += `<polygon points="${pts(cx,cy)}" style="animation-delay:${(k++*0.25).toFixed(2)}s"/>`;
+    }
+  });
+  svg.innerHTML = out;
+})();
+
+/* ---------- rendering ---------- */
+function render(){
+  const hive = $('#hive');
+  $('#sCount').textContent = chain.length;
+  $('#sState').textContent = lastState;
+  $('#sState').style.color = lastState === 'All secure' ? 'var(--ok)' : lastState === 'Tampering!' ? 'var(--bad)' : '';
+  $('#tamperBtn').disabled = $('#verifyBtn').disabled = $('#resetBtn').disabled = chain.length === 0;
+
+  if(!chain.length){
+    hive.innerHTML = `<div class="empty"><svg viewBox="0 0 100 100"><polygon points="50,5 90,27 90,73 50,95 10,73 10,27" fill="none" stroke="#ffb703" stroke-width="3" stroke-dasharray="6 6"/></svg><h3>The honeycomb is empty</h3><p>Store your first piece of data to create a cell.</p></div>`;
+    renderInspector(); return;
+  }
+  const cellW = 182, cols = Math.max(1, Math.floor((hive.clientWidth - cellW/2) / cellW));
+  hive.innerHTML = '';
+  for(let r = 0; r*cols < chain.length; r++){
+    const row = document.createElement('div');
+    row.className = 'hrow';
+    row.style.marginTop = r ? '-46px' : '0';
+    row.style[r % 2 ? 'paddingLeft' : 'paddingRight'] = (cellW/2) + 'px';
+    chain.slice(r*cols, r*cols + cols).forEach(c => row.appendChild(makeCell(c)));
+    hive.appendChild(row);
+  }
+  renderInspector();
+}
+
+function makeCell(c){
+  const b = document.createElement('button');
+  const st = c.status === 'tampered';
+  b.className = 'hex' + (st ? ' bad' : c.status === 'verified' ? ' ok' : '') + (selected === c.index ? ' sel' : '') + (newIdx === c.index ? ' new' : '');
+  b.setAttribute('aria-label', `Cell ${c.index}, ${st ? 'tampered' : 'secure'}. Click to inspect.`);
+  const inn = document.createElement('div'); inn.className = 'in';
+  const mk = (tag, cls, txt) => { const e = document.createElement(tag); if(cls) e.className = cls; e.textContent = txt; inn.appendChild(e); };
+  mk('span','n','CELL #' + c.index);
+  mk('span','d', c.data);
+  mk('small','', fmt(c.timestamp));
+  mk('span','h','prev ' + short(c.previousHash));
+  mk('span','h','hash ' + short(c.hash));
+  mk('span','badge', st ? '✖ Tampered' : '✔ Secure');
+  b.appendChild(inn);
+  b.onclick = () => { selected = c.index; newIdx = null; render(); };
+  return b;
+}
+
+async function renderInspector(){
+  const box = $('#inspect');
+  const c = chain.find(x => x.index === selected);
+  if(!c){ box.innerHTML = '<h3>Cell Inspector</h3><p style="color:var(--mute)">Click any hexagon to inspect its full data and hashes.</p>'; return; }
+  const re = await calcHash(c);
+  const match = re === c.hash;
+  const prev = chain[c.index-2];
+  const linkOk = c.index === 1 ? c.previousHash === ZERO : (prev && prev.hash === c.previousHash);
+  box.innerHTML = `<h3>Cell #${c.index} · ${c.status === 'tampered' ? '<span style="color:var(--bad)">Tampered</span>' : '<span style="color:var(--ok)">Secure</span>'}</h3>
+    <div class="f"><small>Stored data</small><code id="iData"></code></div>
+    <div class="f"><small>Timestamp</small><code>${c.timestamp}</code></div>
+    <div class="f"><small>Previous hash ${linkOk ? '(link OK)' : '(LINK BROKEN)'}</small><code class="${linkOk?'good':'bad'}">${c.previousHash}</code></div>
+    <div class="f"><small>Stored hash</small><code>${c.hash}</code></div>
+    <div class="f"><small>Recomputed hash now ${match ? '(matches)' : '(MISMATCH)'}</small><code class="${match?'good':'bad'}">${re}</code></div>
+    <div class="f"><label for="editBox" style="font-size:.85rem">Simulate an attacker edit</label><textarea id="editBox" rows="2"></textarea>
+    <button id="editBtn" class="btn-red" style="margin-top:8px;width:100%">Edit without re-hashing</button></div>`;
+  $('#iData').textContent = c.data;
+  $('#editBox').value = c.data;
+  $('#editBtn').onclick = () => { const v = $('#editBox').value; if(v === c.data) return; c.data = v; save(); banner('info','Cell #'+c.index+' was edited directly. Click <b>Verify Honeycomb Integrity</b> to see if the system notices.'); render(); };
+}
+
+/* ---------- actions ---------- */
+async function store(){
+  const ta = $('#msg'), data = ta.value.trim();
+  if(!data){ banner('info','Please enter some data before storing.'); ta.focus(); return; }
+  if(!(window.crypto && crypto.subtle)){ banner('bad','Web Crypto is unavailable. Open this file over https or localhost, or in a modern browser.'); return; }
+  const cell = { index: chain.length+1, timestamp: new Date().toISOString(), data, previousHash: chain.length ? chain[chain.length-1].hash : ZERO, status:'secure' };
+  cell.hash = await calcHash(cell);
+  chain.push(cell); save();
+  ta.value = ''; selected = cell.index; newIdx = cell.index; lastState = 'Not run';
+  banner('info', `Cell #${cell.index} sealed and linked to ${cell.index === 1 ? 'the genesis block' : 'cell #' + (cell.index-1)}.`);
+  render();
+}
+
+function demoTamper(){
+  if(!chain.length) return;
+  const c = chain[Math.floor(Math.random()*chain.length)];
+  c.data = 'ALTERED: ' + c.data;   // hash is intentionally NOT recalculated
+  save(); selected = c.index; lastState = 'Not run';
+  banner('info', `Demo: the data in cell #${c.index} was changed without updating its hash. Now click <b>Verify Honeycomb Integrity</b>.`);
+  render();
+}
+
+async function verify(){
+  if(!chain.length) return;
+  const problems = [];
+  for(let i = 0; i < chain.length; i++){
+    const c = chain[i], why = [];
+    if(await calcHash(c) !== c.hash) why.push('its data no longer matches its hash');
+    const expected = i === 0 ? ZERO : chain[i-1].hash;
+    if(c.previousHash !== expected) why.push('its link to the previous cell is broken');
+    c.status = why.length ? 'tampered' : 'verified';
+    if(why.length) problems.push({index:c.index, why});
+  }
+  save();
+  if(problems.length){
+    lastState = 'Tampering!';
+    banner('bad', '🚨 SECURITY ERROR: Integrity check failed!<br>' + problems.map(p => `Cell #${p.index}: ${p.why.join(' and ')}.`).join('<br>'));
+    selected = problems[0].index;
+  } else {
+    lastState = 'All secure';
+    banner('ok', `✔ All ${chain.length} cell${chain.length>1?'s':''} verified. Every hash and link is valid. Honeycomb is secure.`);
+  }
+  render();
+}
+
+function reset(){
+  if(!confirm('Reset the system? All stored cells will be permanently cleared.')) return;
+  chain = []; selected = null; newIdx = null; lastState = 'Not run'; save();
+  banner('info','System reset. The honeycomb is empty.'); render();
+}
+
+$('#storeBtn').onclick = store;
+$('#tamperBtn').onclick = demoTamper;
+$('#verifyBtn').onclick = verify;
+$('#resetBtn').onclick = reset;
+$('#msg').addEventListener('keydown', e => { if(e.key === 'Enter' && (e.ctrlKey || e.metaKey)) store(); });
+let rt; addEventListener('resize', () => { clearTimeout(rt); rt = setTimeout(render, 150); });
+
+load(); render();
+</script>
+</body>
+</html>
